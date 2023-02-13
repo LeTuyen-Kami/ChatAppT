@@ -1,0 +1,19 @@
+{
+  "extends": "@tsconfig/react-native/tsconfig.json",
+  "compilerOptions": {
+    "jsx": "react",
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "baseUrl": ".",
+    "paths": {
+      "components/*": ["src/components/*"],
+      "navigation/*": ["src/navigation/*"],
+      "screens/*": ["src/screens/*"],
+      "services/*": ["src/services/*"],
+      "utils/*": ["src/utils/*"],
+      "src/*": ["src/*"],
+    }
+  },
+    "include": ["src"],
+    "exclude": ["node_modules", "build", "dist", "public", "scripts", "config", "server"]
+}
