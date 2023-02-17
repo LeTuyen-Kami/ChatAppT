@@ -1,9 +1,15 @@
 import React from 'react';
 
 import {Text, View} from 'react-native';
-import {Box} from 'native-base';
+import {Box, Button} from 'native-base';
+import InterText from 'components/InterText';
+import {GenericScreenProps} from 'navigation/AppNavigation';
 
-const ContainerConversations: React.FC<{}> = () => {
+const ContainerConversations: React.FC<any> = ({navigation, route}) => {
+  const onPressGoAIConversation = () => {
+    navigation.navigate('AIConversation');
+  };
+
   return (
     <Box flex={1}>
       <Text
@@ -14,6 +20,9 @@ const ContainerConversations: React.FC<{}> = () => {
         }}>
         Hello
       </Text>
+      <Button onPress={onPressGoAIConversation}>
+        <InterText>GO AI Conversation</InterText>
+      </Button>
     </Box>
   );
 };

@@ -24,6 +24,10 @@ const AppNavigation: React.FC = () => {
           component={BottomTab}
           options={{headerShown: false}}
         />
+        <Stack.Screen
+          name="AIConversation"
+          component={Screens.AIConversation}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );
@@ -34,6 +38,7 @@ type RootStackParamList = {
   // Profile: undefined;
   BottomTab: undefined;
   Login: undefined;
+  AIConversation: undefined;
 };
 
 export type GenericScreenProps<T extends keyof RootStackParamList> =

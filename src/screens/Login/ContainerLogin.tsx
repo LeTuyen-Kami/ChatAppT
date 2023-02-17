@@ -45,10 +45,7 @@ const ContainerLogin: React.FC<GenericScreenProps<'Login'>> = ({
         <InputItem placeholder={'Nhập tài khoản'} />
       </Box>
       <FormControl isInvalid w="75%" maxW="300px">
-        <InterTextInput
-          placeholder={'Nhập mật khẩu'}
-          rightElement={<AddIcon />}
-        />
+        <InputItem placeholder={'Nhập mật khẩu'} />
         <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>
           Try different from previous passwords.
         </FormControl.ErrorMessage>
