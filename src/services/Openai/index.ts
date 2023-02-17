@@ -1,6 +1,6 @@
 import ApiGenerator from 'services/ApiGenerator';
 
-const API_KEY = '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';
+const API_KEY = 'YOUR_API_KEY';
 
 const BASE_URL = 'https://api.openai.com/v1';
 
