@@ -1,6 +1,7 @@
 import ApiGenerator from 'services/ApiGenerator';
 
-const API_KEY = 'YOUR_API_KEY';
+const key = require('assets/key.json');
+const API_KEY = key.openai_key;
 
 const BASE_URL = 'https://api.openai.com/v1';
 
@@ -84,6 +85,8 @@ interface ICompletionParams {
   frequency_penalty?: number;
   presence_penalty?: number;
   stream?: boolean;
+  stop?: string[];
+  best_of?: number;
 }
 
 export const createCompletion = (params: ICompletionParams) => {
