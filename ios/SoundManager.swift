@@ -6,3 +6,17 @@
 //
 
 import Foundation
+import AVFoundation
+
+@available(iOS 13.0, *)
+class SoundManager : ObservableObject {
+    var audioPlayer: AVPlayer?
+
+    func playSound(sound: String){
+        if let url = URL(string: sound) {
+            self.audioPlayer = AVPlayer(url: url)
+        } else {
+          
+        }
+    }
+}

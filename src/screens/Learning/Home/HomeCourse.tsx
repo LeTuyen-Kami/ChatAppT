@@ -5,9 +5,15 @@ import {TouchableOpacity} from 'react-native';
 import FontAwesome5Icon from 'react-native-vector-icons/FontAwesome5';
 import React from 'react';
 
-export function HomeCourse(props: {onPress: () => void}) {
+export function HomeCourse(props: {
+  onPress: () => void;
+  onLongPress: () => void;
+}) {
   return (
-    <TouchableScale scale={0.99} onPress={props.onPress}>
+    <TouchableScale
+      scale={0.99}
+      onPress={props.onPress}
+      onLongPress={props.onLongPress}>
       <Box
         flexDirection={'row'}
         p={1}

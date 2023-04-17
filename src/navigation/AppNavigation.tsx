@@ -13,7 +13,11 @@ const Tab = createBottomTabNavigator();
 const AppNavigation: React.FC = () => {
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName={'Login'}>
+      <Stack.Navigator
+        initialRouteName={'Login'}
+        screenOptions={{
+          headerShown: false,
+        }}>
         <Stack.Screen
           name="Login"
           component={Screens.Login}
@@ -28,6 +32,9 @@ const AppNavigation: React.FC = () => {
           name="AIConversation"
           component={Screens.AIConversation}
         />
+        <Stack.Screen name="Overview" component={Screens.Learning.OverView} />
+        <Stack.Screen name="ListWord" component={Screens.Learning.ListWord} />
+        <Stack.Screen name="InputTest" component={Screens.Learning.InputTest} />
       </Stack.Navigator>
     </NavigationContainer>
   );
@@ -39,6 +46,14 @@ type RootStackParamList = {
   BottomTab: undefined;
   Login: undefined;
   AIConversation: undefined;
+  Overview: undefined;
+  ListWord:
+    | {
+        title?: string;
+        topicId?: string;
+      }
+    | undefined;
+  InputTest: undefined;
 };
 
 export type GenericScreenProps<T extends keyof RootStackParamList> =
@@ -50,6 +65,7 @@ const BottomTab: React.FC = () => {
       screenOptions={{
         headerShown: false,
       }}>
+      <Tab.Screen name="LearnScreen" component={Screens.Learning.Home} />
       <Tab.Screen name="Conversations" component={Screens.Conversations} />
       <Tab.Screen name="Profile" component={Screens.Profile} />
     </Tab.Navigator>

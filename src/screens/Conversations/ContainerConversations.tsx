@@ -1,9 +1,8 @@
-import React from 'react';
+import React, {ReactElement} from 'react';
 
-import {Text, View} from 'react-native';
+import {Text, View, FlatList} from 'react-native';
 import {Box, Button} from 'native-base';
 import InterText from 'components/InterText';
-import {GenericScreenProps} from 'navigation/AppNavigation';
 
 const ContainerConversations: React.FC<any> = ({navigation, route}) => {
   const onPressGoAIConversation = () => {
@@ -12,6 +11,12 @@ const ContainerConversations: React.FC<any> = ({navigation, route}) => {
 
   return (
     <Box flex={1}>
+      <FlatList
+        data={[1, 2, 3]}
+        renderItem={({item}) => {
+          return <Text>{item}</Text>;
+        }}
+      />
       <Text
         style={{
           fontFamily: 'Inter',

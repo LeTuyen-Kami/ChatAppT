@@ -6,6 +6,9 @@ import {createCompletion} from 'services/Openai';
 import {GiftedChat, Send} from 'react-native-gifted-chat';
 import InterText from 'components/InterText';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import {atomWithMMKV} from 'src/database';
+import {useAtom} from 'jotai';
+import TypingAnimation from 'components/TypingAnimation';
 
 type message = {
   _id: string;
@@ -18,6 +21,8 @@ type message = {
   };
 };
 
+const listConversationDb = atomWithMMKV<message[]>('listConversation', []);
+
 const addContextToPrompt = (prompt: string, previousMessages: message[]) => {
   let context =
     'The following is a conversation with an AI assistant. The assistant is helpful, creative, clever, and very friendly. \n\n';
@@ -27,16 +32,15 @@ const addContextToPrompt = (prompt: string, previousMessages: message[]) => {
   for (let i = lastMessages.length - 1; i >= 0; i--) {
     context += lastMessages[i].user.name + ': ' + lastMessages[i].text + '\n';
   }
-  console.log('context', context + prompt);
   return context + `Human: ${prompt} \nAI: `;
 };
 
 const ContainerAIConversation: React.FC<
   GenericScreenProps<'AIConversation'>
 > = ({navigation}) => {
-  const [listConversation, setListConversation] = React.useState<message[]>([]);
+  // const [listConversation, setListConversation] = React.useState<message[]>([]);
+  const [listConversation, setListConversation] = useAtom(listConversationDb);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
-  const scrollRef = React.useRef<typeof ScrollView>(null);
 
   const onSend = React.useCallback(
     (messages: any = []) => {
@@ -140,7 +144,11 @@ const ContainerAIConversation: React.FC<
       }}
       renderFooter={() => {
         if (isLoading) {
-          return <InterText>Đang tìm kiếm câu trả lời...</InterText>;
+          return (
+            <Box marginLeft={3}>
+              <TypingAnimation text={'Đang tìm kiếm câu trả lời'} />
+            </Box>
+          );
         } else {
           return null;
         }

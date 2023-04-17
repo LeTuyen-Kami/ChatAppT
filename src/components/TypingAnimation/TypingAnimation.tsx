@@ -2,49 +2,22 @@ import React from 'react';
 
 import {Text, View} from 'react-native';
 import {Box} from 'native-base';
-import Animated, {
-  withRepeat,
-  withSpring,
-  useSharedValue,
-  useAnimatedStyle,
-} from 'react-native-reanimated';
+import Dot from 'components/TypingAnimation/Dot';
+import InterText from 'components/InterText';
 
-const AnimatedDot = Animated.createAnimatedComponent(Box);
-
-const TypingAnimation: React.FC<{}> = () => {
-  const value = useSharedValue(0);
-
-  //center dot
-  React.useEffect(() => {
-    value.value = withRepeat(withSpring(10), -1, true);
-  }, []);
-
-  const animatedStyle = useAnimatedStyle(() => {
-    return {
-      transform: [
-        {
-          translateY: value.value,
-        },
-      ],
-    };
-  });
-
+const TypingAnimation: React.FC<{
+  dotNumber?: number;
+  text?: string;
+}> = ({dotNumber = 3, text}) => {
   return (
-    <Box flex={1}>
-      <Dot animatedStyle={animatedStyle} />
+    <Box flexDir={'row'} alignItems={'center'}>
+      <InterText italic fontSize={16}>
+        {text}{' '}
+      </InterText>
+      {[...Array(dotNumber).keys()].map(item => {
+        return <Dot key={item} index={item} />;
+      })}
     </Box>
-  );
-};
-
-const Dot = ({animatedStyle}: {animatedStyle: any}) => {
-  return (
-    <AnimatedDot
-      style={animatedStyle}
-      width={2}
-      height={2}
-      borderRadius={5}
-      backgroundColor={'black'}
-    />
   );
 };
 

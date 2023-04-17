@@ -21,6 +21,7 @@ module.exports = function (api) {
             assets: './src/assets',
             utils: './src/utils',
             services: './src/services',
+            database: './src/database',
           },
         },
       ],
