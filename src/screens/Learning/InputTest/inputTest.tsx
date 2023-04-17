@@ -1,66 +1,20 @@
 import React from 'react';
-import {Box, Center, Pressable, useToast} from 'native-base';
+import {Box, Center, Image, useToast} from 'native-base';
 import InterText from 'components/InterText';
 import Header from 'components/Header';
-import {Dimensions} from 'react-native';
-import Animated, {
-  withTiming,
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
-} from 'react-native-reanimated';
-import dataToeic, {DataWord} from 'src/assets/dataToeic';
+import Animated, {withSpring, runOnJS} from 'react-native-reanimated';
+import {DataWord} from 'src/assets/dataToeic';
 import TouchableScale from 'components/TouchableScale';
 import ToastCustom from 'components/ToastCustom';
 import {GenericScreenProps} from 'navigation/AppNavigation';
 import {storage} from 'src/database';
+import FontAwesome5Icon from 'react-native-vector-icons/FontAwesome5';
+import RNSound from 'components/RNSound';
+import {getRandomThreeAnotherWord, LIST_WORD} from './utils';
+import {width} from 'utils/utils';
+import {useAnimated} from 'screens/Learning/InputTest/hook';
 
 const AnimatedBox = Animated.createAnimatedComponent(Box);
-
-const LIST_WORD = dataToeic
-  .map(item => {
-    return item.data_child;
-  })
-  .flat();
-
-const LIST_WORĐ_RANDOM: {
-  idx: number;
-  words: DataWord[];
-}[] = [];
-
-const getRandomThreeAnotherWord = (idx: number) => {
-  if (
-    LIST_WORĐ_RANDOM.length !== 0 &&
-    LIST_WORĐ_RANDOM.find(item => item.idx === idx)
-  ) {
-    return LIST_WORĐ_RANDOM.find(item => item.idx === idx)?.words;
-  }
-
-  const arr: number[] = [];
-  while (arr.length < 3) {
-    const rd = Math.floor(Math.random() * LIST_WORD.length);
-    if (rd !== idx && !arr.includes(rd)) {
-      arr.push(rd);
-    }
-  }
-
-  const listResult = [
-    LIST_WORD[idx],
-    LIST_WORD[arr[0]],
-    LIST_WORD[arr[1]],
-    LIST_WORD[arr[2]],
-  ].sort(() => Math.random() - 0.5);
-
-  LIST_WORĐ_RANDOM.push({
-    idx,
-    words: listResult,
-  });
-  if (LIST_WORĐ_RANDOM.length > 3) {
-    LIST_WORĐ_RANDOM.shift();
-  }
-  return listResult;
-};
-const screen = Dimensions.get('window');
 
 const initialIndex = () =>
   storage.getString('LastIndex')
@@ -71,8 +25,6 @@ const initialIndex = () =>
         isFail: false,
       };
 const InputTest: React.FC<GenericScreenProps<'InputTest'>> = ({navigation}) => {
-  const progress1 = useSharedValue(0);
-  const progress2 = useSharedValue(0);
   const box1Ref = React.useRef<any>(null);
   const [index, setIndex] = React.useState<{
     index: number;
@@ -80,28 +32,25 @@ const InputTest: React.FC<GenericScreenProps<'InputTest'>> = ({navigation}) => {
     isFail: boolean;
   }>(initialIndex());
 
+  const [isVolume, setIsVolume] = React.useState(true);
+
+  const {progress1, progress2, animatedStyle1, animatedStyle2} = useAnimated();
+
+  const toggleVolume = () => {
+    setIsVolume(!isVolume);
+  };
+
   const toast = useToast();
 
-  const animatedStyle1 = useAnimatedStyle(() => {
-    return {
-      transform: [{translateX: progress1.value * screen.width}],
-      zIndex: progress1.value !== 0 ? 10 : 0,
-      position: 'absolute',
-      width: screen.width,
-      height: screen.height,
-    };
-  }, []);
+  const playSound = (idx: number, isSkipLock: boolean = false) => {
+    if (!isVolume && !isSkipLock) return;
 
-  const animatedStyle2 = useAnimatedStyle(() => {
-    return {
-      transform: [{translateX: -progress2.value * screen.width}],
-      zIndex: 1,
-      position: 'absolute',
-      width: screen.width,
-      height: screen.height,
-      left: screen.width,
-    };
-  }, []);
+    if (idx < 0) idx = 0;
+    if (idx >= LIST_WORD.length) idx = LIST_WORD.length - 1;
+
+    const url = LIST_WORD[idx].child_audio_url;
+    RNSound.sound(url);
+  };
 
   const onPress = () => {
     box1Ref.current?.measure(
@@ -114,6 +63,7 @@ const InputTest: React.FC<GenericScreenProps<'InputTest'>> = ({navigation}) => {
           });
           progress2.value = withSpring(1, {}, () => {
             progress1.value = 1;
+            runOnJS(playSound)(index.index + 1);
           });
         } else {
           setIndex({
@@ -123,6 +73,7 @@ const InputTest: React.FC<GenericScreenProps<'InputTest'>> = ({navigation}) => {
           });
           progress1.value = withSpring(0, {}, () => {
             progress2.value = 0;
+            runOnJS(playSound)(index.index + 1);
           });
         }
       },
@@ -182,9 +133,21 @@ const InputTest: React.FC<GenericScreenProps<'InputTest'>> = ({navigation}) => {
     return (
       <Box flex={1} mb={10}>
         <Center flex={1}>
-          <InterText bold fontSize={20}>
-            {LIST_WORD[idx].child_name}
-          </InterText>
+          <Image
+            src={LIST_WORD[idx].child_image_url}
+            width={200}
+            height={160}
+            resizeMode={'contain'}
+            alt={'image'}
+          />
+          <Box flexDirection={'row'} alignItems={'center'}>
+            <InterText bold fontSize={'2xl'} color={'#ff00ff'}>
+              {LIST_WORD[idx].child_name} {'  '}
+            </InterText>
+            <TouchableScale onPress={playSound.bind(null, index.index, true)}>
+              <FontAwesome5Icon name={'volume-up'} size={20} />
+            </TouchableScale>
+          </Box>
         </Center>
         <Box flexWrap={'wrap'} flex={2}>
           {data.map((item: DataWord, index: number) => {
@@ -193,11 +156,13 @@ const InputTest: React.FC<GenericScreenProps<'InputTest'>> = ({navigation}) => {
                 key={index}
                 onPress={onPressItem.bind(null, item)}>
                 <Center
+                  shadow={2}
+                  borderRadius={3}
                   p={2}
                   m={2}
                   bg={'#fff'}
-                  width={screen.width / 2 - 16}
-                  height={screen.width / 2 - 16}
+                  width={width / 2 - 16}
+                  height={width / 2 - 16}
                   justifyContent={'center'}
                   alignItems={'center'}>
                   <InterText textAlign={'center'}>
@@ -237,21 +202,28 @@ const InputTest: React.FC<GenericScreenProps<'InputTest'>> = ({navigation}) => {
 
   return (
     <Box flex={1}>
-      <Header title={'Kiểm Tra Đầu Vào'} />
-      <Pressable flex={1} onPress={onPress}>
-        <Box flex={1} flexDirection={'row'}>
-          <AnimatedBox style={animatedStyle1} ref={box1Ref} bg={'#00ffff'}>
-            {index.page === 0
-              ? renderPage(index.index - 1)
-              : renderPage(index.index)}
-          </AnimatedBox>
-          <AnimatedBox style={animatedStyle2} bg={'#ff00ff'}>
-            {index.page === 1
-              ? renderPage(index.index - 1)
-              : renderPage(index.index)}
-          </AnimatedBox>
-        </Box>
-      </Pressable>
+      <Header
+        title={'Kiểm Tra Đầu Vào'}
+        rightComponent={
+          <FontAwesome5Icon
+            name={!isVolume ? 'volume-mute' : 'volume-up'}
+            size={20}
+          />
+        }
+        onPressRight={toggleVolume}
+      />
+      <Box flex={1} flexDirection={'row'}>
+        <AnimatedBox style={animatedStyle1} ref={box1Ref} bg={'#00ffff'}>
+          {index.page === 0
+            ? renderPage(index.index - 1)
+            : renderPage(index.index)}
+        </AnimatedBox>
+        <AnimatedBox style={animatedStyle2} bg={'#00ffff'}>
+          {index.page === 1
+            ? renderPage(index.index - 1)
+            : renderPage(index.index)}
+        </AnimatedBox>
+      </Box>
     </Box>
   );
 };

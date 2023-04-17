@@ -60,6 +60,10 @@ const Header: React.FC<{
               React.Children.map(
                 rightComponent,
                 (child: React.ReactElement) => {
+                  if (child.props.size) {
+                    return child;
+                  }
+
                   return React.cloneElement(child, {
                     size: 5,
                   });
