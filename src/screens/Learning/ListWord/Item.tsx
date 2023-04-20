@@ -1,5 +1,5 @@
 import {DataWord} from 'src/assets/dataToeic';
-import {storage} from 'src/database';
+import {Database} from 'src/database';
 import RNSound from 'components/RNSound';
 import TouchableScale from 'components/TouchableScale';
 import {Box} from 'native-base';
@@ -17,7 +17,7 @@ export const ItemWord = ({
   item: DataWord;
   openActionSheet: () => void;
 }) => {
-  const itemScore = storage.getNumber(item.child_name);
+  const itemScore = Database.getNumber(item.child_name);
   const onPress = () => {
     RNSound.sound(item.child_audio_url);
   };

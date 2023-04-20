@@ -2,11 +2,13 @@ import React from 'react';
 import {Box} from 'native-base';
 import Header from 'components/Header';
 import {HomeCourse} from 'screens/Learning/Home/HomeCourse';
-import {storage} from 'src/database';
+import {Database} from 'src/database';
 
 const Home: React.FC<any> = ({navigation}) => {
   const navigateOverview = () => {
-    const isNotFirstAccess = storage.getBoolean('isNotFirstAccess');
+    const isNotFirstAccess = Database.getBoolean(
+      Database.keys.IS_NOT_FIRST_ACCESS,
+    );
     if (isNotFirstAccess) {
       navigation.navigate('Overview');
       return;

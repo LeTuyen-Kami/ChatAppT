@@ -2,13 +2,12 @@ import React from 'react';
 
 import {Actionsheet, Box, useDisclose} from 'native-base';
 import Header from 'components/Header';
-import dataToeic, {DataToeicProps} from 'src/assets/dataToeic';
+import dataToeic, {DataWord} from 'src/assets/dataToeic';
 import {FlashList} from '@shopify/flash-list';
 import {GenericScreenProps} from 'navigation/AppNavigation';
 import {ItemWord} from 'screens/Learning/ListWord/Item';
 import InterText from 'components/InterText';
-import {storage} from 'src/database';
-import TouchableScale from 'components/TouchableScale';
+import {Database} from 'src/database';
 import FontAwesome5Icon from 'react-native-vector-icons/FontAwesome5';
 import Animated, {
   withSpring,
@@ -25,8 +24,54 @@ const AnimatedFlashList = Animated.createAnimatedComponent(FlashList);
 const AnimatedBox = Animated.createAnimatedComponent(Box);
 
 const getGoTopLocation = () => {
-  return storage.getString('GoTopLocation');
+  return Database.getString(Database.keys.GO_TOP_LOCATION);
 };
+
+const listItem = (learned: boolean, topicId: string) => {
+  let newData: DataWord[] = [];
+  if (topicId) {
+    let dataTopic = dataToeic.find(item => item.order === topicId);
+    if (dataTopic) {
+      newData = dataTopic.data_child.filter(item => {
+        const itemScore = Database.getNumber(item.child_name);
+        if (itemScore) {
+          return learned;
+        }
+        return !learned;
+      });
+    }
+  } else {
+    newData = dataToeic
+      .map(item => {
+        return item.data_child.filter(i => {
+          const itemScore = Database.getNumber(i.child_name);
+          if (itemScore) {
+            return learned;
+          }
+          return !learned;
+        });
+      })
+      .flat();
+  }
+  return newData;
+};
+
+const defaultData = (topicId: string) => {
+  return dataToeic
+    .map(item => {
+      if (!topicId) {
+        return item.data_child;
+      }
+
+      if (item.order === topicId) {
+        return item.data_child;
+      } else {
+        return [];
+      }
+    })
+    .flat();
+};
+
 const ListWord: React.FC<GenericScreenProps<'ListWord'>> = ({
   navigation,
   route,
@@ -40,6 +85,16 @@ const ListWord: React.FC<GenericScreenProps<'ListWord'>> = ({
       ? JSON.parse(getGoTopLocation() as string)
       : {x: 0, y: 0},
   );
+  const title = route.params?.title;
+  const topicId = route.params?.topicId || '';
+
+  const wordsLearned = React.useMemo(() => listItem(true, topicId), [topicId]);
+  const wordsLearning = React.useMemo(
+    () => listItem(false, topicId),
+    [topicId],
+  );
+  const _defaultData = React.useMemo(() => defaultData(topicId), [topicId]);
+  const [data, setData] = React.useState<DataWord[]>(_defaultData);
 
   const animatedStyle = useAnimatedStyle(() => {
     return {
@@ -62,7 +117,10 @@ const ListWord: React.FC<GenericScreenProps<'ListWord'>> = ({
   });
 
   const updateLocation = () => {
-    storage.set('GoTopLocation', JSON.stringify(translate.value));
+    Database.set(
+      Database.keys.GO_TOP_LOCATION,
+      JSON.stringify(translate.value),
+    );
   };
 
   const pan = Gesture.Pan()
@@ -79,77 +137,26 @@ const ListWord: React.FC<GenericScreenProps<'ListWord'>> = ({
       runOnJS(updateLocation)();
     });
 
-  const title = route.params?.title;
-  const topicId = route.params?.topicId;
-
-  const [data, setData] = React.useState<DataToeicProps>(dataToeic);
-
   const renderItem = ({item}: any) => {
     return <ItemWord item={item} openActionSheet={onOpen} />;
   };
 
   const action = {
     1: (_: boolean) => {
-      setData(dataToeic);
+      setData(_defaultData);
       onClose();
     },
     2: (learned: boolean) => {
-      let newData: DataToeicProps = [];
-      if (topicId) {
-        let dataTopic = dataToeic.find(item => item.order === topicId);
-        if (dataTopic) {
-          dataTopic = {
-            ...dataTopic,
-            data_child: dataTopic.data_child.filter(item => {
-              const itemScore = storage.getNumber(item.child_name);
-              if (itemScore) {
-                return learned;
-              }
-              return !learned;
-            }),
-          };
-          newData = [dataTopic];
-        }
-      } else {
-        newData = dataToeic.map(item => {
-          return {
-            ...item,
-            data_child: item.data_child.filter(item => {
-              const itemScore = storage.getNumber(item.child_name);
-              if (itemScore) {
-                return learned;
-              }
-              return !learned;
-            }),
-          };
-        });
-      }
+      const newData = learned ? wordsLearned : wordsLearning;
       onClose();
-
       setData(newData);
     },
   };
 
   const onPressItemActionSheet = (index: 1 | 2 | 3) => {
     let actionIndex: 1 | 2 = index === 1 ? 1 : 2;
-    action[actionIndex](index === 2 ? true : false);
+    action[actionIndex](index === 2);
   };
-
-  const handleData = React.useMemo(() => {
-    return data
-      .map(item => {
-        if (!topicId) {
-          return item.data_child;
-        }
-
-        if (item.order === topicId) {
-          return item.data_child;
-        } else {
-          return [];
-        }
-      })
-      .flat();
-  }, [data, topicId]);
 
   const onGoTop = () => {
     flatListRef.current?.scrollToIndex({index: 0, animated: true});
@@ -163,8 +170,9 @@ const ListWord: React.FC<GenericScreenProps<'ListWord'>> = ({
         estimatedItemSize={70}
         onScroll={onScroll}
         renderItem={renderItem}
-        data={handleData}
+        data={data}
         scrollEventThrottle={16}
+        numColumns={1}
       />
       <TouchableOpacity
         onPress={onGoTop}
@@ -204,13 +212,24 @@ const ListWord: React.FC<GenericScreenProps<'ListWord'>> = ({
             </InterText>
           </Box>
           <Actionsheet.Item onPress={onPressItemActionSheet.bind(null, 1)}>
-            Default
+            <InterText>
+              Default{' '}
+              <InterText bold>{_defaultData.length + ' words'}</InterText>{' '}
+            </InterText>
           </Actionsheet.Item>
           <Actionsheet.Item onPress={onPressItemActionSheet.bind(null, 2)}>
-            Have learned
+            <InterText>
+              Have learned
+              <InterText bold>{' ' + wordsLearned.length + ' words'}</InterText>
+            </InterText>
           </Actionsheet.Item>
           <Actionsheet.Item onPress={onPressItemActionSheet.bind(null, 3)}>
-            Haven't studied yet
+            <InterText>
+              Haven't studied yet{' '}
+              <InterText bold>
+                {' ' + wordsLearning.length + ' words'}
+              </InterText>
+            </InterText>
           </Actionsheet.Item>
         </Actionsheet.Content>
       </Actionsheet>

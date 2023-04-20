@@ -16,7 +16,7 @@ function App(): JSX.Element {
       <SafeAreaView
         style={{
           flex: 1,
-          backgroundColor: 'red',
+          backgroundColor: '#fff',
         }}>
         <AppNavigation />
       </SafeAreaView>

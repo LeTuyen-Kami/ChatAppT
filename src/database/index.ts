@@ -3,6 +3,14 @@ import {MMKV} from 'react-native-mmkv';
 
 export const storage = new MMKV();
 
+export const Database = Object.assign(storage, {
+  keys: {
+    GO_TOP_LOCATION: 'GoTopLocation',
+    LAST_INDEX: 'LastIndex',
+    IS_NOT_FIRST_ACCESS: 'isNotFirstAccess',
+  },
+});
+
 function getItem<T>(key: string): T | null {
   const value = storage.getString(key);
   return value ? JSON.parse(value) : null;

@@ -1,5 +1,5 @@
 import React from 'react';
-import {Box, Center, Image, useToast} from 'native-base';
+import {Box, Center, useToast} from 'native-base';
 import InterText from 'components/InterText';
 import Header from 'components/Header';
 import Animated, {withSpring, runOnJS} from 'react-native-reanimated';
@@ -7,7 +7,7 @@ import {DataWord} from 'src/assets/dataToeic';
 import TouchableScale from 'components/TouchableScale';
 import ToastCustom from 'components/ToastCustom';
 import {GenericScreenProps} from 'navigation/AppNavigation';
-import {storage} from 'src/database';
+import {Database} from 'src/database';
 import FontAwesome5Icon from 'react-native-vector-icons/FontAwesome5';
 import RNSound from 'components/RNSound';
 import {getRandomThreeAnotherWord, LIST_WORD} from './utils';
@@ -17,8 +17,8 @@ import {useAnimated} from 'screens/Learning/InputTest/hook';
 const AnimatedBox = Animated.createAnimatedComponent(Box);
 
 const initialIndex = () =>
-  storage.getString('LastIndex')
-    ? JSON.parse(storage.getString('LastIndex') as string)
+  Database.getString(Database.keys.LAST_INDEX)
+    ? JSON.parse(Database.getString(Database.keys.LAST_INDEX) as string)
     : {
         index: 0,
         page: 0,
@@ -36,6 +36,8 @@ const InputTest: React.FC<GenericScreenProps<'InputTest'>> = ({navigation}) => {
 
   const {progress1, progress2, animatedStyle1, animatedStyle2} = useAnimated();
 
+  const [lockPress, setLockPress] = React.useState(false);
+
   const toggleVolume = () => {
     setIsVolume(!isVolume);
   };
@@ -43,7 +45,9 @@ const InputTest: React.FC<GenericScreenProps<'InputTest'>> = ({navigation}) => {
   const toast = useToast();
 
   const playSound = (idx: number, isSkipLock: boolean = false) => {
-    if (!isVolume && !isSkipLock) return;
+    if (!isVolume && !isSkipLock) {
+      return;
+    }
 
     if (idx < 0) idx = 0;
     if (idx >= LIST_WORD.length) idx = LIST_WORD.length - 1;
@@ -53,6 +57,7 @@ const InputTest: React.FC<GenericScreenProps<'InputTest'>> = ({navigation}) => {
   };
 
   const onPress = () => {
+    setLockPress(true);
     box1Ref.current?.measure(
       (_: any, __: any, ___: any, ____: any, pageX: number) => {
         if (pageX === 0) {
@@ -64,6 +69,7 @@ const InputTest: React.FC<GenericScreenProps<'InputTest'>> = ({navigation}) => {
           progress2.value = withSpring(1, {}, () => {
             progress1.value = 1;
             runOnJS(playSound)(index.index + 1);
+            runOnJS(setLockPress)(false);
           });
         } else {
           setIndex({
@@ -74,6 +80,7 @@ const InputTest: React.FC<GenericScreenProps<'InputTest'>> = ({navigation}) => {
           progress1.value = withSpring(0, {}, () => {
             progress2.value = 0;
             runOnJS(playSound)(index.index + 1);
+            runOnJS(setLockPress)(false);
           });
         }
       },
@@ -101,8 +108,8 @@ const InputTest: React.FC<GenericScreenProps<'InputTest'>> = ({navigation}) => {
             },
           });
           setTimeout(() => {
-            if (index.isFail === false) {
-              storage.set(LIST_WORD[idx].child_name, 5);
+            if (!index.isFail) {
+              Database.set(LIST_WORD[idx].child_name, 5);
             }
             onPress();
             toast.closeAll();
@@ -131,15 +138,40 @@ const InputTest: React.FC<GenericScreenProps<'InputTest'>> = ({navigation}) => {
     };
 
     return (
-      <Box flex={1} mb={10}>
-        <Center flex={1}>
-          <Image
-            src={LIST_WORD[idx].child_image_url}
-            width={200}
-            height={160}
-            resizeMode={'contain'}
-            alt={'image'}
+      <Box flex={1}>
+        <Center
+          shadow={2}
+          bg={'transparent'}
+          position={'absolute'}
+          top={0}
+          right={6}>
+          {/*<Icon*/}
+          {/*  bg={'red.200'}*/}
+          {/*  as={FontAwesome5Icon}*/}
+          {/*  name={'bookmark'}*/}
+          {/*  size={10}*/}
+          {/*  solid*/}
+          {/*/>*/}
+          <FontAwesome5Icon
+            color={'#3d3d24'}
+            solid
+            name={'bookmark'}
+            size={50}
           />
+          <Center position={'absolute'} top={0} left={0} right={0} bottom={0}>
+            <InterText bold fontSize={'lg'} color={'white'}>
+              {idx}
+            </InterText>
+          </Center>
+        </Center>
+        <Center flex={1}>
+          {/*<Image*/}
+          {/*  src={LIST_WORD[idx].child_image_url}*/}
+          {/*  width={200}*/}
+          {/*  height={160}*/}
+          {/*  resizeMode={'contain'}*/}
+          {/*  alt={'image'}*/}
+          {/*/>*/}
           <Box flexDirection={'row'} alignItems={'center'}>
             <InterText bold fontSize={'2xl'} color={'#ff00ff'}>
               {LIST_WORD[idx].child_name} {'  '}
@@ -150,11 +182,9 @@ const InputTest: React.FC<GenericScreenProps<'InputTest'>> = ({navigation}) => {
           </Box>
         </Center>
         <Box flexWrap={'wrap'} flex={2}>
-          {data.map((item: DataWord, index: number) => {
+          {data.map((item: DataWord, idx: number) => {
             return (
-              <TouchableScale
-                key={index}
-                onPress={onPressItem.bind(null, item)}>
+              <TouchableScale key={idx} onPress={onPressItem.bind(null, item)}>
                 <Center
                   shadow={2}
                   borderRadius={3}
@@ -178,9 +208,9 @@ const InputTest: React.FC<GenericScreenProps<'InputTest'>> = ({navigation}) => {
   };
 
   React.useEffect(() => {
-    storage.set('LastIndex', JSON.stringify(index));
+    Database.set(Database.keys.LAST_INDEX, JSON.stringify(index));
     if (index.index === LIST_WORD.length) {
-      storage.set('isNotFirstAccess', false);
+      Database.set(Database.keys.LAST_INDEX, false);
       toast.show({
         render: () => {
           return (
@@ -224,6 +254,20 @@ const InputTest: React.FC<GenericScreenProps<'InputTest'>> = ({navigation}) => {
             : renderPage(index.index)}
         </AnimatedBox>
       </Box>
+      <TouchableScale
+        isDisabled={lockPress}
+        _disabled={{opacity: 0.5}}
+        onPress={onPress}
+        h={10}
+        bg={'#ff00ff'}
+        justifyContent={'center'}
+        m={2}
+        borderRadius={3}
+        alignItems={'center'}>
+        <InterText bold fontSize={16} color={'white'} textAlign={'center'}>
+          Không biết
+        </InterText>
+      </TouchableScale>
     </Box>
   );
 };
