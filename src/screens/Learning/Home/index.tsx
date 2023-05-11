@@ -17,6 +17,7 @@ const Home: React.FC<any> = ({navigation}) => {
   };
 
   const onLongPress = () => {
+    console.log('onLongPress');
     navigation.navigate('Overview');
   };
 

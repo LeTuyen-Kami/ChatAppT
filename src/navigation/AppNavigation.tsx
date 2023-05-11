@@ -6,6 +6,7 @@ import {
 } from '@react-navigation/native-stack';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import * as Screens from '../screens';
+import {Test} from 'screens/Test';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator();
@@ -35,6 +36,7 @@ const AppNavigation: React.FC = () => {
         <Stack.Screen name="Overview" component={Screens.Learning.OverView} />
         <Stack.Screen name="ListWord" component={Screens.Learning.ListWord} />
         <Stack.Screen name="InputTest" component={Screens.Learning.InputTest} />
+        <Stack.Screen name="Test" component={Test} />
       </Stack.Navigator>
     </NavigationContainer>
   );
@@ -54,6 +56,7 @@ type RootStackParamList = {
       }
     | undefined;
   InputTest: undefined;
+  Test: undefined;
 };
 
 export type GenericScreenProps<T extends keyof RootStackParamList> =

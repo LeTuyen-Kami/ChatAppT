@@ -1,0 +1,12 @@
+diff --git a/node_modules/recyclerlistview/src/core/RecyclerListView.tsx b/node_modules/recyclerlistview/src/core/RecyclerListView.tsx
+index 95dd87b..b1c5197 100644
+--- a/node_modules/recyclerlistview/src/core/RecyclerListView.tsx
++++ b/node_modules/recyclerlistview/src/core/RecyclerListView.tsx
+@@ -775,6 +775,7 @@ export default class RecyclerListView<P extends RecyclerListViewProps, S extends
+                 const triggerOnEndThreshold = Default.value<number>(this.props.onEndReachedThreshold, 0);
+ 
+                 if (threshold <= triggerOnEndThresholdRelative || threshold <= triggerOnEndThreshold) {
++                    console.log("onEndReached threshold reached");
+                     if (this.props.onEndReached && !this._onEndReachedCalled) {
+                         this._onEndReachedCalled = true;
+                         this.props.onEndReached();

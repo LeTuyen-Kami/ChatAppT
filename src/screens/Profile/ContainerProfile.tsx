@@ -18,6 +18,9 @@ import {
 } from '@shopify/react-native-skia';
 import {width} from 'utils/utils';
 import {useSharedValue, withRepeat, withTiming} from 'react-native-reanimated';
+import {useNavigation} from '@react-navigation/native';
+import Popover from 'components/Popover';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const ContainerProfile: React.FC<{}> = () => {
   const screen = useWindowDimensions();
@@ -220,6 +223,27 @@ vec4 main(vec2 fragcoord) {
 
   `)!;
 
+  const navigation = useNavigation() as any;
+
+  const navigateTest = () => {
+    navigation.navigate('Test');
+  };
+
+  const ListSelection = React.useMemo(() => {
+    return [
+      {
+        title: 'Test1',
+        onPress: navigateTest,
+        icon: <MaterialCommunityIcons name={'home'} size={24} />,
+      },
+      {
+        title: 'Test2',
+        onPress: navigateTest,
+        icon: <MaterialCommunityIcons name={'home'} size={24} />,
+      },
+    ];
+  }, []);
+
   return (
     <Box w={screen.width} h={screen.height}>
       <Box w={200} h={200}>
@@ -234,6 +258,17 @@ vec4 main(vec2 fragcoord) {
         {/*/>*/}
         <Button onPress={convertToMp3}>Convert to mp3</Button>
         <Button onPress={Location}>Location</Button>
+        <Button onPress={navigateTest}>Test</Button>
+        <Popover selection={ListSelection}>
+          <View
+            style={{
+              borderRadius: 10,
+              backgroundColor: 'red',
+              width: 100,
+            }}>
+            <Text>Test popover</Text>
+          </View>
+        </Popover>
         <Canvas
           onTouch={touch}
           style={{

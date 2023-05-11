@@ -9,6 +9,131 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import {atomWithMMKV} from 'src/database';
 import {useAtom} from 'jotai';
 import TypingAnimation from 'components/TypingAnimation';
+import Popover from 'components/Popover';
+
+const fakeData = [
+  {
+    _id: 1,
+    text:
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer' +
+      'Hello developer',
+    createdAt: new Date(),
+    user: {
+      _id: 2,
+      name: 'React Native',
+      avatar: 'https://placeimg.com/140/140/any',
+    },
+  },
+];
+
+for (let i = 0; i < 100; i++) {
+  fakeData.push({
+    _id: i + 2,
+    text: 'Hello developer' + i,
+    createdAt: new Date(),
+    user: {
+      _id: i + 1,
+      name: 'React Native',
+      avatar: 'https://placeimg.com/140/140/any',
+    },
+  });
+}
 
 type message = {
   _id: string;
@@ -21,7 +146,10 @@ type message = {
   };
 };
 
-const listConversationDb = atomWithMMKV<message[]>('listConversation', []);
+const listConversationDb = atomWithMMKV<message[]>(
+  'listConversation',
+  fakeData,
+);
 
 const addContextToPrompt = (prompt: string, previousMessages: message[]) => {
   let context =
@@ -85,10 +213,60 @@ const ContainerAIConversation: React.FC<
     [listConversation],
   );
 
+  const ListSelection = React.useMemo(() => {
+    return [
+      {
+        title: 'Test1',
+        onPress: () => {},
+        icon: <MaterialCommunityIcons name={'home'} size={24} />,
+      },
+      {
+        title: 'Test2',
+        onPress: () => {},
+        icon: <MaterialCommunityIcons name={'home'} size={24} />,
+      },
+      {
+        title: 'Test2',
+        onPress: () => {},
+        icon: <MaterialCommunityIcons name={'home'} size={24} />,
+      },
+    ];
+  }, []);
+
   return (
     <GiftedChat
       messages={listConversation}
       wrapInSafeArea={false}
+      onLongPress={() => {}}
+      renderMessage={props => {
+        return (
+          <Box>
+            <Popover
+              selection={ListSelection}
+              fitLeft={props.currentMessage?.user._id === 1}>
+              <Box
+                // w={'200px'}
+                p={2}
+                // m={2}
+                style={{
+                  margin: 10,
+                  maxWidth: 300,
+                }}
+                bg={'red.50'}
+                borderRadius={3}
+                alignSelf={
+                  props.currentMessage?.user._id === 1
+                    ? 'flex-start'
+                    : 'flex-end'
+                }>
+                <InterText fontSize={16}>
+                  {props.currentMessage?.text}
+                </InterText>
+              </Box>
+            </Popover>
+          </Box>
+        );
+      }}
       onSend={onSend}
       renderChatEmpty={() => {
         return (
