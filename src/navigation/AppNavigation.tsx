@@ -36,6 +36,8 @@ const AppNavigation: React.FC = () => {
         <Stack.Screen name="Overview" component={Screens.Learning.OverView} />
         <Stack.Screen name="ListWord" component={Screens.Learning.ListWord} />
         <Stack.Screen name="InputTest" component={Screens.Learning.InputTest} />
+        <Stack.Screen name="ChatScreen" component={Screens.ChatScreen} />
+        <Stack.Screen name="Register" component={Screens.Register} />
         <Stack.Screen name="Test" component={Test} />
       </Stack.Navigator>
     </NavigationContainer>
@@ -57,6 +59,10 @@ type RootStackParamList = {
     | undefined;
   InputTest: undefined;
   Test: undefined;
+  ChatScreen: {
+    channelName?: string;
+  };
+  Register: undefined;
 };
 
 export type GenericScreenProps<T extends keyof RootStackParamList> =

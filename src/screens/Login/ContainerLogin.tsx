@@ -1,23 +1,36 @@
 import React from 'react';
 
-import {
-  Box,
-  VStack,
-  FormControl,
-  WarningOutlineIcon,
-  Button,
-  HStack,
-} from 'native-base';
+import {Box, Button, FormControl, Toast, VStack} from 'native-base';
 import {GenericScreenProps} from 'navigation/AppNavigation';
 import InputItem from 'screens/Login/InputItem';
 import InterText from 'components/InterText';
+import {login, testCall} from 'services/api';
+import {useNavigation} from '@react-navigation/native';
 
 const useHandleLogin = () => {
-  const [account, setAccount] = React.useState('');
-  const [password, setPassword] = React.useState('');
-
+  const [account, setAccount] = React.useState('Letuyen123');
+  const [password, setPassword] = React.useState('Letuyen123');
+  const navigation = useNavigation<GenericScreenProps<'Login'>['navigation']>();
   const handleLogin = () => {
-    console.log('handleLogin');
+    navigation.navigate('BottomTab');
+    return;
+    login({
+      name: account,
+      password: password,
+    })
+      .then(res => {
+        console.log('res', res);
+        Toast.show({
+          title: 'Đăng nhập thành công',
+        });
+        navigation.navigate('BottomTab');
+      })
+      .catch(err => {
+        console.log('err', err);
+        Toast.show({
+          title: 'Đăng nhập thất bại',
+        });
+      });
   };
 
   const isValidPassword = password.length > 6;
@@ -35,8 +48,9 @@ const useHandleLogin = () => {
 const ContainerLogin: React.FC<GenericScreenProps<'Login'>> = ({
   navigation,
 }) => {
+  console.log('render Login');
   const handlePress = () => {
-    navigation.navigate('BottomTab');
+    navigation.navigate('Register');
   };
 
   const {
@@ -70,7 +84,7 @@ const ContainerLogin: React.FC<GenericScreenProps<'Login'>> = ({
         <InputItem
           value={account}
           onChangeText={setAccount}
-          role={'account'}
+          roleI={'account'}
           placeholder={'Nhập tài khoản'}
         />
       </Box>
@@ -78,7 +92,7 @@ const ContainerLogin: React.FC<GenericScreenProps<'Login'>> = ({
         <InputItem
           value={password}
           onChangeText={setPassword}
-          role={'password'}
+          roleI={'password'}
           placeholder={'Nhập mật khẩu'}
         />
         <Box>

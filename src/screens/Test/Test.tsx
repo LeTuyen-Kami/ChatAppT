@@ -10,13 +10,15 @@ import Animated, {
   useAnimatedReaction,
   interpolate,
   withRepeat,
+  withTiming,
 } from 'react-native-reanimated';
 import {FlashList, CellContainer} from '@shopify/flash-list';
 import ItemTest from './Item';
 import {width} from 'utils/utils';
-import {Box} from 'native-base';
+import {Box, Center} from 'native-base';
 import {Gesture, GestureDetector} from 'react-native-gesture-handler';
 import {useClockValue} from '@shopify/react-native-skia';
+import Item from './Item';
 
 const AnimatedBox = Animated.createAnimatedComponent(Box);
 
@@ -24,6 +26,8 @@ const TestSquare: React.FC<any> = () => {
   const scrollX = useSharedValue(0);
   const ctx = useSharedValue(0);
   const x = useClockValue(0);
+  const list = [1, 2, 3, 4, 5, 6, 7];
+  const offset = 360 / list.length;
 
   const pan = Gesture.Pan()
     .onStart(() => {
@@ -33,62 +37,33 @@ const TestSquare: React.FC<any> = () => {
       scrollX.value = ctx.value + event.translationX;
     })
     .onEnd(event => {
-      scrollX.value = withDecay({
-        velocity: event.velocityX,
-        velocityFactor: 5,
-        // clamp: [-100, 100],
-      });
+      let index = Math.round(scrollX.value / 120);
+      if (event.velocityX > 0) {
+        index = Math.ceil(scrollX.value / offset);
+      } else {
+        index = Math.floor(scrollX.value / offset);
+      }
+      scrollX.value = withTiming(index * offset);
     });
   // Math.sin(scrollX.value / 180) * 150
-
-  useAnimatedReaction(
-    () => {
-      return scrollX.value;
-    },
-    value => {
-      console.log(0.5 + Math.cos(scrollX.value / 180) / 2);
-    },
-  );
-
-  const animatedStyle = useAnimatedStyle(() => {
-    return {
-      transform: [
-        {
-          translateX: Math.sin(scrollX.value / 180) * 150,
-        },
-        {
-          translateY: Math.cos(scrollX.value / 180) * 20,
-        },
-        {
-          scale: interpolate(
-            0.5 + Math.cos(scrollX.value / 180) / 2,
-            [0, 1],
-            [0.6, 1],
-          ),
-        },
-        {
-          rotate: `${scrollX.value}deg`,
-        },
-      ],
-      backgroundColor: `rgb(255,255,${
-        Math.abs(Math.sin(scrollX.value / 180)) * 255
-      })`,
-    };
-  }, []);
 
   return (
     <Box flex={1} justifyContent={'center'}>
       <GestureDetector gesture={pan}>
-        <Box
-          bg={'teal.200'}
-          w={'full'}
-          h={20}
-          justifyContent={'center'}
-          flexDirection={'row'}>
-          <AnimatedBox w={20} h={20} bg={'red.500'} style={animatedStyle} />
-          <AnimatedBox w={20} h={20} bg={'red.500'} style={animatedStyle} />
-          <AnimatedBox w={20} h={20} bg={'red.500'} style={animatedStyle} />
-        </Box>
+        <Center>
+          <Box bg={'teal.200'} w={300} h={20} flexDirection={'row'}>
+            {list.map((item, index) => {
+              return (
+                <Item
+                  length={list.length}
+                  scrollX={scrollX}
+                  key={index}
+                  index={index}
+                />
+              );
+            })}
+          </Box>
+        </Center>
       </GestureDetector>
     </Box>
   );
